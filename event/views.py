@@ -4,15 +4,18 @@ from rest_framework.authtoken.models import Token
 from rest_framework.generics import GenericAPIView, RetrieveAPIView
 from rest_framework import permissions
 from django.contrib.auth import get_user_model
-from .models import Event, Services, Products, People
+from .models import Event, Expenditure, People
 from .serializers import (
+    AddExpenditureSerializer,
     EventSerializer,
     EventsSerializer,
     InvitationSerializer,
     PeopleSerializer,
     InvitedEventSerializer,
     InvitationStatusSerializer,
-    GuestsSerializer
+    GuestsSerializer,
+    ExpenditureSerializer,
+    AddExpenditureSerializer
 )
 
 from datetime import datetime
@@ -149,3 +152,27 @@ class FetchGuestsView(RetrieveAPIView):
                 code = status.HTTP_403_FORBIDDEN
             return Response(data=[], status=code)
         return Response(data=[], status=status.HTTP_400_BAD_REQUEST)
+
+
+class AddExpenditureView(GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = AddExpenditureSerializer
+    queryset = People.objects.all()
+
+    # def get(self, request, *args, **kwargs):
+    #   id = kwargs.get('pk')
+    #   expenditures = Expenditure.objects.filter(even)
+
+    def post(self, request, *args, **kwargs):
+        request.data['id'] = kwargs.get('pk')
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            expenditure = serializer.save()
+            expenditureDict = ExpenditureSerializer(expenditure)
+            return Response(data=expenditureDict.data, status=status.HTTP_201_CREATED)
+        errors = serializer.errors
+        code = status.HTTP_400_BAD_REQUEST
+        if errors['non_field_errors']:
+            code = status.HTTP_404_NOT_FOUND
+            return Response(data={}, status=code)
+        return Response(data={}, status=status.HTTP_400_BAD_REQUEST)

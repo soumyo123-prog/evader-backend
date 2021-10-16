@@ -26,18 +26,7 @@ class People(models.Model):
         return f'{self.user.name}'
 
 
-class Services(models.Model):
-    name = models.CharField(max_length=100)
-    organization = models.CharField(max_length=100)
-    quantity = models.IntegerField(default=0)
-    unitPrice = models.IntegerField()
-    event = models.ForeignKey(Event, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return f'{self.name}'
-
-
-class Products(models.Model):
+class Expenditure(models.Model):
     name = models.CharField(max_length=100)
     organization = models.CharField(max_length=100)
     quantity = models.IntegerField(default=0)

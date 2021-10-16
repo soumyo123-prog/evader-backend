@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 from rest_framework import serializers, status
-from .models import Event, People
+from .models import Event, People, Expenditure
 from django.contrib.auth import get_user_model
 
 
@@ -151,3 +151,43 @@ class GuestsSerializer(serializers.Serializer):
                     'email': guest.user.email
                 })
         return guestsDictList
+
+
+class AddExpenditureSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField(max_length=100)
+    organization = serializers.CharField(max_length=100)
+    quantity = serializers.IntegerField(default=0)
+    unitPrice = serializers.IntegerField(default=0)
+
+    def validate(self, data):
+        id = data.get('id')
+        if not Event.objects.filter(id=id).exists():
+            raise ValidationError(
+                'Event with this id does not exist', status.HTTP_404_NOT_FOUND)
+        return data
+
+    def save(self):
+        id = self.validated_data.get('id')
+        name = self.validated_data.get('name')
+        organization = self.validated_data.get('organization')
+        quantity = self.validated_data.get('quantity')
+        unitPrice = self.validated_data.get('unitPrice')
+
+        event = Event.objects.get(id=id)
+
+        expenditure = Expenditure.objects.create(
+            name=name,
+            organization=organization,
+            quantity=quantity,
+            unitPrice=unitPrice,
+            event=event
+        )
+        expenditure.save()
+        return expenditure
+
+
+class ExpenditureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Expenditure
+        fields = ('id', 'name', 'organization', 'quantity', 'unitPrice',)
