@@ -154,14 +154,18 @@ class FetchGuestsView(RetrieveAPIView):
         return Response(data=[], status=status.HTTP_400_BAD_REQUEST)
 
 
-class AddExpenditureView(GenericAPIView):
+class ExpenditureView(GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = AddExpenditureSerializer
-    queryset = People.objects.all()
+    queryset = Expenditure.objects.all()
 
-    # def get(self, request, *args, **kwargs):
-    #   id = kwargs.get('pk')
-    #   expenditures = Expenditure.objects.filter(even)
+    def get(self, request, *args, **kwargs):
+        expenditures = Expenditure.objects.filter(
+            event__creator=request.user)
+        if expenditures:
+            serializer = ExpenditureSerializer(expenditures, many=True)
+            return Response(data=serializer.data, status=status.HTTP_200_OK)
+        return Response(data=[], status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
         request.data['id'] = kwargs.get('pk')
