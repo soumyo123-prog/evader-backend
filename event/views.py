@@ -67,6 +67,16 @@ class FetchEventView(RetrieveAPIView):
             data={'error': 'User not permitted to view the event'},
             status=status.HTTP_403_FORBIDDEN)
 
+    def delete(self, request, *args, **kwargs):
+        event = Event.objects.filter(id=kwargs.get('pk'), creator=request.user)
+        if event:
+            event = event[0]
+            event.delete()
+            return Response(data={}, status=status.HTTP_200_OK)
+        return Response(
+            data={'error': 'User not permitted to delete the event'},
+            status=status.HTTP_403_FORBIDDEN)
+
 
 class InvitePeopleView(GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -160,12 +170,18 @@ class ExpenditureView(GenericAPIView):
     queryset = Expenditure.objects.all()
 
     def get(self, request, *args, **kwargs):
-        expenditures = Expenditure.objects.filter(
-            event__creator=request.user)
-        if expenditures:
-            serializer = ExpenditureSerializer(expenditures, many=True)
-            return Response(data=serializer.data, status=status.HTTP_200_OK)
-        return Response(data=[], status=status.HTTP_200_OK)
+        id = kwargs.get('pk')
+        event = Event.objects.filter(id=id, creator=request.user)
+        if event:
+            event = event[0]
+            expenditures = Expenditure.objects.filter(event=event)
+            if expenditures:
+                serializer = ExpenditureSerializer(expenditures, many=True)
+                return Response(data=serializer.data, status=status.HTTP_200_OK)
+            return Response(data=[], status=status.HTTP_200_OK)
+        return Response(
+            data={'error': 'User not permitted to view expenditure of this event'},
+            status=status.HTTP_403_FORBIDDEN)
 
     def post(self, request, *args, **kwargs):
         request.data['id'] = kwargs.get('pk')
