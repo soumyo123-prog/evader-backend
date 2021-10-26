@@ -2,6 +2,7 @@ from django.core.exceptions import ValidationError
 from rest_framework import serializers, status
 from .models import Event, People, Expenditure
 from django.contrib.auth import get_user_model
+from datetime import datetime
 
 
 class EventSerializer(serializers.Serializer):
@@ -54,6 +55,13 @@ class InvitationSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 'User is already invited to this event',
                 status.HTTP_409_CONFLICT)
+
+        eventDate = int(Event.objects.get(id=id).time.strftime("%Y%m%d%H%M%S"))
+        currDate = int(datetime.now().strftime("%Y%m%d%H%M%S"))
+
+        if (eventDate < currDate):
+            raise serializers.ValidationError(
+                'User cannot be invited because event is completed', status.HTTP_403_FORBIDDEN)
 
         return data
 

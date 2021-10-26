@@ -22,4 +22,5 @@ urlpatterns = [
     path('invitation/status/<int:pk>/', SetInvitationStatusView.as_view()),
     path('expenditure/<int:pk>/', ExpenditureView.as_view()),
     path('delete/<int:pk>/', FetchEventView.as_view()),
+    path('update/<int:pk>/', FetchEventView.as_view())
 ]
