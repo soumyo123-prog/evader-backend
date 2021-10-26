@@ -68,7 +68,28 @@ class FetchEventView(RetrieveAPIView):
             status=status.HTTP_403_FORBIDDEN)
 
     def patch(self, request, *args, **kwargs):
-      pass
+        event = Event.objects.filter(id=kwargs.get('pk'), creator=request.user)
+        if event:
+            event = event[0]
+
+            currDate = int(datetime.now().strftime("%Y%m%d%H%M%S"))
+            eventDate = int(event.time.strftime("%Y%m%d%H%M%S"))
+            if (eventDate < currDate):
+                return Response(
+                    data={'error': 'Event cannot be modified because it is completed'},
+                    status=status.HTTP_403_FORBIDDEN)
+
+            time = datetime.strptime(request.data.get(
+                'time'), '%Y-%m-%dT%H:%M:%S.%fZ')
+            event.name = request.data.get('name')
+            event.description = request.data.get('description')
+            event.time = time
+            event.save()
+            return Response(data={}, status=status.HTTP_200_OK)
+
+        return Response(
+            data={'error': 'User not permitted to update the event'},
+            status=status.HTTP_403_BAD_REQUEST)
 
     def delete(self, request, *args, **kwargs):
         event = Event.objects.filter(id=kwargs.get('pk'), creator=request.user)
