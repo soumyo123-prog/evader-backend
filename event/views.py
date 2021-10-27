@@ -67,7 +67,7 @@ class FetchEventView(RetrieveAPIView):
             data={'error': 'User not permitted to view the event'},
             status=status.HTTP_403_FORBIDDEN)
 
-    def patch(self, request, *args, **kwargs):
+    def put(self, request, *args, **kwargs):
         event = Event.objects.filter(id=kwargs.get('pk'), creator=request.user)
         if event:
             event = event[0]
