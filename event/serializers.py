@@ -154,6 +154,7 @@ class GuestsSerializer(serializers.Serializer):
         if guests:
             for guest in guests:
                 guestsDictList.append({
+                    'id': guest.id,
                     'status': guest.status,
                     'name': guest.user.name,
                     'email': guest.user.email

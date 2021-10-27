@@ -188,6 +188,27 @@ class FetchGuestsView(RetrieveAPIView):
         return Response(data=[], status=status.HTTP_400_BAD_REQUEST)
 
 
+class GuestView(GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = GuestsSerializer
+    queryset = People.objects.all()
+
+    def delete(self, request, *args, **kwargs):
+        id = kwargs.get('pk')
+        if People.objects.filter(id=id).exists():
+            invitation = People.objects.filter(id=id)[0]
+            if invitation.event.creator == request.user:
+                invitation.delete()
+                return Response(data={}, status=status.HTTP_200_OK)
+            return Response(
+                data={'error': 'User is not permitted to delete this invitation'},
+                status=status.HTTP_403_FORBIDDEN)
+
+        return Response(
+            data={'error': 'Invitation with this id does not exist'},
+            status=status.HTTP_404_NOT_FOUND)
+
+
 class ExpenditureView(GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = AddExpenditureSerializer
