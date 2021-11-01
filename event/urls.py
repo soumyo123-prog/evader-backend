@@ -9,7 +9,8 @@ from .views import (
     FetchInvitedEventView,
     SetInvitationStatusView,
     FetchGuestsView,
-    ExpenditureView
+    ExpenditureView,
+    UsageView
 )
 
 urlpatterns = [
@@ -24,5 +25,6 @@ urlpatterns = [
     path('invitation/remove/<int:pk>/', GuestView.as_view()),
     path('expenditure/<int:pk>/', ExpenditureView.as_view()),
     path('delete/<int:pk>/', FetchEventView.as_view()),
-    path('update/<int:pk>/', FetchEventView.as_view())
+    path('update/<int:pk>/', FetchEventView.as_view()),
+    path('usage/', UsageView.as_view())
 ]

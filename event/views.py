@@ -241,3 +241,21 @@ class ExpenditureView(GenericAPIView):
             code = status.HTTP_404_NOT_FOUND
             return Response(data={}, status=code)
         return Response(data={}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UsageView(GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = EventsSerializer
+    queryset = Event.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        created = 0
+        invited = 0
+        if Event.objects.filter(creator=request.user).exists():
+            created = Event.objects.filter(creator=request.user).count()
+        if People.objects.filter(user=request.user).exists():
+            invited = People.objects.filter(user=request.user).count()
+
+        return Response(
+            data={'created': created, 'invited': invited},
+            status=status.HTTP_200_OK)
