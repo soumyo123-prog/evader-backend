@@ -11,18 +11,21 @@ class EventSerializer(serializers.Serializer):
     venue = serializers.CharField(max_length=255)
     time = serializers.DateTimeField()
     fireId = serializers.CharField(max_length=255)
+    duration = serializers.IntegerField()
 
     def save(self, **kwargs):
         name = self.validated_data.get('name')
         description = self.validated_data.get('description', '')
         venue = self.validated_data.get('venue')
         time = self.validated_data.get('time')
+        duration = self.validated_data.get('duration')
         fireId = self.validated_data.get('fireId')
         user = self.context["request"].user
 
         event = Event.objects.create(
             name=name, description=description,
             venue=venue, time=time,
+            duration=duration,
             creator=user, fireId=fireId
         )
         event.save()
@@ -32,7 +35,8 @@ class EventSerializer(serializers.Serializer):
 class EventsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
-        fields = ['id', 'name', 'description', 'venue', 'time', 'fireId', ]
+        fields = ['id', 'name', 'description',
+                  'venue', 'time', 'fireId', 'duration']
 
 
 class InvitationSerializer(serializers.Serializer):

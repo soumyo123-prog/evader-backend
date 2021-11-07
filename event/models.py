@@ -10,6 +10,7 @@ class Event(models.Model):
     description = models.CharField(max_length=255)
     venue = models.CharField(max_length=255)
     time = models.DateTimeField()
+    duration = models.IntegerField()
     creator = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     fireId = models.CharField(max_length=255, default='')
 

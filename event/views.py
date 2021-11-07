@@ -242,6 +242,22 @@ class ExpenditureView(GenericAPIView):
             return Response(data={}, status=code)
         return Response(data={}, status=status.HTTP_400_BAD_REQUEST)
 
+    def delete(self, request, *args, **kwargs):
+        id = kwargs.get('pk')
+        expenditure = Expenditure.objects.filter(id=id)
+        if expenditure:
+            expenditure = expenditure[0]
+            if expenditure.event.creator == request.user:
+                expenditure.delete()
+                return Response(data={}, status=status.HTTP_200_OK)
+            return Response(
+                data={'error': 'User is not permitted to delete this expenditure'},
+                status=status.HTTP_403_FORBIDDEN)
+        return Response(
+            data={'error': 'Expenditure with this id does not exist'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
 
 class UsageView(GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
