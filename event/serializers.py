@@ -80,12 +80,6 @@ class InvitationSerializer(serializers.Serializer):
         return invitation
 
 
-class PeopleSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = People
-        fields = ['id', 'status', ]
-
-
 class InvitedEventSerializer(serializers.Serializer):
     def fetch(self):
         user = self.context["request"].user

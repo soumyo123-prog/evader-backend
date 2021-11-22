@@ -10,7 +10,6 @@ from .serializers import (
     EventSerializer,
     EventsSerializer,
     InvitationSerializer,
-    PeopleSerializer,
     InvitedEventSerializer,
     InvitationStatusSerializer,
     GuestsSerializer,
@@ -114,8 +113,13 @@ class InvitePeopleView(GenericAPIView):
             error = serializer.errors.get('non_field_errors')[0]
             return Response(data={'error': error}, status=status.HTTP_404_NOT_FOUND)
         invitation = serializer.save()
-        invitationDict = PeopleSerializer(invitation)
-        return Response(data=invitationDict.data, status=status.HTTP_200_OK)
+        invitationDict = {
+            'id': invitation.id,
+            'status': invitation.status,
+            'name': invitation.user.name,
+            'email': invitation.user.email
+        }
+        return Response(data=invitationDict, status=status.HTTP_200_OK)
 
 
 class FetchInvitedEventsView(GenericAPIView):
