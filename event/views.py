@@ -82,6 +82,7 @@ class FetchEventView(RetrieveAPIView):
                 'time'), '%Y-%m-%dT%H:%M:%S.%fZ')
             event.name = request.data.get('name')
             event.description = request.data.get('description')
+            event.venue = request.data.get('venue')
             event.time = time
             event.save()
             return Response(data={}, status=status.HTTP_200_OK)
