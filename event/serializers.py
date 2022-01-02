@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from datetime import datetime
 
 
-class EventSerializer(serializers.Serializer):
+class CreateEventSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=100)
     description = serializers.CharField(max_length=255, allow_blank=True)
     venue = serializers.CharField(max_length=255)
@@ -13,7 +13,7 @@ class EventSerializer(serializers.Serializer):
     fireId = serializers.CharField(max_length=255)
     duration = serializers.IntegerField()
 
-    def save(self, **kwargs):
+    def save(self):
         name = self.validated_data.get('name')
         description = self.validated_data.get('description', '')
         venue = self.validated_data.get('venue')
@@ -32,7 +32,96 @@ class EventSerializer(serializers.Serializer):
         return event
 
 
-class EventsSerializer(serializers.ModelSerializer):
+class FetchEventsSerializer(serializers.Serializer):
+    def fetch(self):
+        user = self.context["request"].user
+        events = Event.objects.filter(creator=user)
+        events_serialized = EventSerializer(events, many=True)
+        return events_serialized
+
+
+class FetchEventSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+
+    def validate(self, data):
+        id = data.get('id')
+        user = self.context["request"].user
+        event = Event.objects.filter(id=id, creator=user)
+        if not event:
+            raise ValidationError(
+                "User not permitted to access this event", status.HTTP_403_FORBIDDEN)
+        return data
+
+    def fetch(self):
+        id = self.validated_data.get("id")
+        user = self.context["request"].user
+        event = Event.objects.filter(id=id, creator=user)[0]
+        event_serialized = EventSerializer(event)
+        return event_serialized
+
+
+class DeleteEventSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+
+    def validate(self, data):
+        id = data.get("id")
+        user = self.context["request"].user
+        event = Event.objects.filter(id=id, creator=user)
+        if not event:
+            raise ValidationError(
+                "User not permitted to access this event", status.HTTP_403_FORBIDDEN)
+        return data
+
+    def delete_event(self):
+        id = self.validated_data.get("id")
+        user = self.context["request"].user
+        event = Event.objects.filter(id=id, creator=user)[0]
+        event.delete()
+
+
+class UpdateEventSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    time = serializers.CharField()
+    name = serializers.CharField(max_length=100)
+    description = serializers.CharField(max_length=255, allow_blank=True)
+    venue = serializers.CharField(max_length=255)
+
+    def validate(self, data):
+        id = data.get("id")
+        user = self.context["request"].user
+        event = Event.objects.filter(id=id, creator=user)
+        if not event:
+            raise ValidationError(
+                "User not permitted to access this event", status.HTTP_403_FORBIDDEN)
+
+        event = event[0]
+        currDate = int(datetime.now().strftime("%Y%m%d%H%M%S"))
+        eventDate = int(event.time.strftime("%Y%m%d%H%M%S"))
+        if (eventDate < currDate):
+            raise ValidationError(
+                'Event cannot be modified because it is completed',
+                status=status.HTTP_400_BAD_REQUEST)
+        return data
+
+    def update_event(self):
+        time = datetime.strptime(self.validated_data.get(
+            'time'), '%Y-%m-%dT%H:%M:%S.%fZ')
+        name = self.validated_data.get('name')
+        description = self.validated_data.get('description')
+        venue = self.validated_data.get('venue')
+
+        id = self.validated_data.get('id')
+        user = self.context["request"].user
+        event = Event.objects.filter(id=id, creator=user)[0]
+
+        event.time = time
+        event.name = name
+        event.description = description
+        event.venue = venue
+        event.save()
+
+
+class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = ['id', 'name', 'description',
@@ -89,7 +178,7 @@ class InvitedEventSerializer(serializers.Serializer):
             invitedEvents = []
             for invitation in invitations:
                 eventObj = invitation.event
-                eventDict = EventsSerializer(eventObj).data
+                eventDict = EventSerializer(eventObj).data
                 eventDict['status'] = invitation.status
                 eventDict['invitedBy'] = f'{eventObj.creator.name} : {eventObj.creator.email}'
                 invitedEvents.append(eventDict)

@@ -7,14 +7,17 @@ from django.contrib.auth import get_user_model
 from .models import Event, Expenditure, People
 from .serializers import (
     AddExpenditureSerializer,
+    CreateEventSerializer,
+    DeleteEventSerializer,
     EventSerializer,
-    EventsSerializer,
+    ExpenditureSerializer,
+    FetchEventSerializer,
+    FetchEventsSerializer,
+    GuestsSerializer,
     InvitationSerializer,
     InvitedEventSerializer,
     InvitationStatusSerializer,
-    GuestsSerializer,
-    ExpenditureSerializer,
-    AddExpenditureSerializer
+    UpdateEventSerializer
 )
 
 from datetime import datetime
@@ -23,83 +26,74 @@ from datetime import datetime
 
 
 class CreateEventView(GenericAPIView):
+    """
+    post:
+        Creates an event with the given data if valid and returns the details of the event.
+        Otherwise returns a 400 bad request.
+    """
     permission_classes = [permissions.IsAuthenticated]
     queryset = Event.objects.all()
-    serializer_class = EventSerializer
+    serializer_class = CreateEventSerializer
 
     def post(self, request, *args, **kwargs):
         time = datetime.strptime(request.data.get(
             'time'), '%Y-%m-%dT%H:%M:%S.%fZ')
         request.data['time'] = time
         serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            event = serializer.save()
-            eventDict = EventsSerializer(event)
-            return Response(data=eventDict.data, status=status.HTTP_201_CREATED)
-        return Response(data={}, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        event = serializer.save()
+        event_dict = EventSerializer(event)
+        return Response(data=event_dict.data, status=status.HTTP_201_CREATED)
 
 
 class FetchEventsView(RetrieveAPIView):
     permission_classes = [permissions.IsAuthenticated]
-    serializer_class = EventsSerializer
+    serializer_class = FetchEventsSerializer
     queryset = Event.objects.all()
 
     def get(self, request, *args, **kwargs):
-        events = Event.objects.filter(creator=request.user)
-        if events:
-            serializer = self.get_serializer(events, many=True)
-            return Response(data=serializer.data, status=status.HTTP_200_OK)
-        return Response(data=[], status=status.HTTP_200_OK)
+        serializer = self.get_serializer()
+        events = serializer.fetch()
+        return Response(data=events.data, status=status.HTTP_200_OK)
 
 
 class FetchEventView(RetrieveAPIView):
     permission_classes = [permissions.IsAuthenticated]
-    serializer_class = EventsSerializer
+    serializer_class = FetchEventSerializer
     queryset = Event.objects.all()
 
-    def get(self, request, *args, **kwargs):
-        event = Event.objects.filter(id=kwargs.get('pk'), creator=request.user)
-        if event:
-            serializer = self.get_serializer(event[0])
-            return Response(data=serializer.data, status=status.HTTP_200_OK)
-        return Response(
-            data={'error': 'User not permitted to view the event'},
-            status=status.HTTP_403_FORBIDDEN)
+    def get(self, request, pk):
+        request.data['id'] = pk
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        event = serializer.fetch()
+        return Response(data=event.data, status=status.HTTP_200_OK)
 
-    def put(self, request, *args, **kwargs):
-        event = Event.objects.filter(id=kwargs.get('pk'), creator=request.user)
-        if event:
-            event = event[0]
 
-            currDate = int(datetime.now().strftime("%Y%m%d%H%M%S"))
-            eventDate = int(event.time.strftime("%Y%m%d%H%M%S"))
-            if (eventDate < currDate):
-                return Response(
-                    data={'error': 'Event cannot be modified because it is completed'},
-                    status=status.HTTP_403_FORBIDDEN)
+class DeleteEventView(GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = DeleteEventSerializer
+    queryset = Event.objects.all()
 
-            time = datetime.strptime(request.data.get(
-                'time'), '%Y-%m-%dT%H:%M:%S.%fZ')
-            event.name = request.data.get('name')
-            event.description = request.data.get('description')
-            event.venue = request.data.get('venue')
-            event.time = time
-            event.save()
-            return Response(data={}, status=status.HTTP_200_OK)
+    def delete(self, request, pk):
+        request.data['id'] = pk
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.delete_event()
+        return Response(data={}, status=status.HTTP_200_OK)
 
-        return Response(
-            data={'error': 'User not permitted to update the event'},
-            status=status.HTTP_403_BAD_REQUEST)
 
-    def delete(self, request, *args, **kwargs):
-        event = Event.objects.filter(id=kwargs.get('pk'), creator=request.user)
-        if event:
-            event = event[0]
-            event.delete()
-            return Response(data={}, status=status.HTTP_200_OK)
-        return Response(
-            data={'error': 'User not permitted to delete the event'},
-            status=status.HTTP_403_FORBIDDEN)
+class UpdateEventView(GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = UpdateEventSerializer
+    queryset = Event.objects.all()
+
+    def put(self, request, pk):
+        request.data['id'] = pk
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.update_event()
+        return Response(data={}, status=status.HTTP_200_OK)
 
 
 class InvitePeopleView(GenericAPIView):
@@ -136,7 +130,7 @@ class FetchInvitedEventsView(GenericAPIView):
 
 class FetchInvitedEventView(GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
-    serializer_class = EventsSerializer
+    serializer_class = EventSerializer
     queryset = People.objects.all()
 
     def get(self, request, *args, **kwargs):
@@ -266,7 +260,7 @@ class ExpenditureView(GenericAPIView):
 
 class UsageView(GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
-    serializer_class = EventsSerializer
+    serializer_class = EventSerializer
     queryset = Event.objects.all()
 
     def get(self, request, *args, **kwargs):
