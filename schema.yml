@@ -1,0 +1,676 @@
+openapi: 3.0.3
+info:
+  title: Your Project API
+  version: 1.0.0
+  description: Your project description
+paths:
+  /api/schema/:
+    get:
+      operationId: api_schema_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - json
+          - yaml
+      - in: query
+        name: lang
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - ar-dz
+          - ast
+          - az
+          - be
+          - bg
+          - bn
+          - br
+          - bs
+          - ca
+          - cs
+          - cy
+          - da
+          - de
+          - dsb
+          - el
+          - en
+          - en-au
+          - en-gb
+          - eo
+          - es
+          - es-ar
+          - es-co
+          - es-mx
+          - es-ni
+          - es-ve
+          - et
+          - eu
+          - fa
+          - fi
+          - fr
+          - fy
+          - ga
+          - gd
+          - gl
+          - he
+          - hi
+          - hr
+          - hsb
+          - hu
+          - hy
+          - ia
+          - id
+          - ig
+          - io
+          - is
+          - it
+          - ja
+          - ka
+          - kab
+          - kk
+          - km
+          - kn
+          - ko
+          - ky
+          - lb
+          - lt
+          - lv
+          - mk
+          - ml
+          - mn
+          - mr
+          - ms
+          - my
+          - nb
+          - ne
+          - nl
+          - nn
+          - os
+          - pa
+          - pl
+          - pt
+          - pt-br
+          - ro
+          - ru
+          - sk
+          - sl
+          - sq
+          - sr
+          - sr-latn
+          - sv
+          - sw
+          - ta
+          - te
+          - tg
+          - th
+          - tk
+          - tr
+          - tt
+          - udm
+          - uk
+          - ur
+          - uz
+          - vi
+          - zh-hans
+          - zh-hant
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/vnd.oai.openapi:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/yaml:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /auth/login/:
+    post:
+      operationId: auth_login_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Login'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Login'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Login'
+          description: ''
+  /auth/profile/:
+    get:
+      operationId: auth_profile_retrieve
+      tags:
+      - auth
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+          description: ''
+  /event/create/:
+    post:
+      operationId: event_create_create
+      description: |-
+        post:
+            Creates an event with the given data if valid and returns the details of the event.
+            Otherwise returns a 400 bad request.
+      tags:
+      - event
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEvent'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CreateEvent'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CreateEvent'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateEvent'
+          description: ''
+  /event/delete/{id}/:
+    delete:
+      operationId: event_delete_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - event
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /event/expenditure/{id}/:
+    get:
+      operationId: event_expenditure_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - event
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddExpenditure'
+          description: ''
+    post:
+      operationId: event_expenditure_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - event
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddExpenditure'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AddExpenditure'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AddExpenditure'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddExpenditure'
+          description: ''
+    delete:
+      operationId: event_expenditure_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - event
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /event/fetch/:
+    get:
+      operationId: event_fetch_retrieve
+      tags:
+      - event
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: No response body
+  /event/fetch/{id}/:
+    get:
+      operationId: event_fetch_retrieve_2
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - event
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FetchEvent'
+          description: ''
+  /event/fetch/{id}/guests/:
+    get:
+      operationId: event_fetch_guests_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - event
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Guests'
+          description: ''
+  /event/fetch/invited:
+    get:
+      operationId: event_fetch_invited_retrieve
+      tags:
+      - event
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: No response body
+  /event/fetch/invited/{id}/:
+    get:
+      operationId: event_fetch_invited_retrieve_2
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - event
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+          description: ''
+  /event/invitation/remove/{id}/:
+    delete:
+      operationId: event_invitation_remove_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - event
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /event/invitation/status/{id}/:
+    post:
+      operationId: event_invitation_status_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - event
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvitationStatus'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/InvitationStatus'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/InvitationStatus'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationStatus'
+          description: ''
+  /event/invite/{id}/:
+    post:
+      operationId: event_invite_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - event
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Invitation'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Invitation'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Invitation'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invitation'
+          description: ''
+  /event/update/{id}/:
+    put:
+      operationId: event_update_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - event
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEvent'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UpdateEvent'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UpdateEvent'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateEvent'
+          description: ''
+  /event/usage/:
+    get:
+      operationId: event_usage_retrieve
+      tags:
+      - event
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+          description: ''
+components:
+  schemas:
+    AddExpenditure:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+          maxLength: 100
+        organization:
+          type: string
+          maxLength: 100
+        quantity:
+          type: integer
+          default: 0
+        unitPrice:
+          type: integer
+          default: 0
+      required:
+      - id
+      - name
+      - organization
+    CreateEvent:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 255
+        venue:
+          type: string
+          maxLength: 255
+        time:
+          type: string
+          format: date-time
+        fireId:
+          type: string
+          maxLength: 255
+        duration:
+          type: integer
+      required:
+      - description
+      - duration
+      - fireId
+      - name
+      - time
+      - venue
+    Event:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 255
+        venue:
+          type: string
+          maxLength: 255
+        time:
+          type: string
+          format: date-time
+        fireId:
+          type: string
+          maxLength: 255
+        duration:
+          type: integer
+      required:
+      - description
+      - duration
+      - id
+      - name
+      - time
+      - venue
+    FetchEvent:
+      type: object
+      properties:
+        id:
+          type: integer
+      required:
+      - id
+    Guests:
+      type: object
+      properties:
+        id:
+          type: integer
+      required:
+      - id
+    Invitation:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+          format: email
+          maxLength: 255
+      required:
+      - email
+      - id
+    InvitationStatus:
+      type: object
+      properties:
+        id:
+          type: integer
+        status:
+          type: integer
+      required:
+      - id
+      - status
+    Login:
+      type: object
+      properties:
+        id_token:
+          type: string
+          maxLength: 2400
+      required:
+      - id_token
+    Profile:
+      type: object
+      properties:
+        uid:
+          type: string
+          maxLength: 1500
+        name:
+          type: string
+          maxLength: 100
+        email:
+          type: string
+          format: email
+          maxLength: 255
+      required:
+      - email
+      - name
+      - uid
+    UpdateEvent:
+      type: object
+      properties:
+        id:
+          type: integer
+        time:
+          type: string
+        name:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+          maxLength: 255
+        venue:
+          type: string
+          maxLength: 255
+      required:
+      - description
+      - id
+      - name
+      - time
+      - venue
+  securitySchemes:
+    tokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix "Token"

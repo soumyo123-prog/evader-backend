@@ -12,6 +12,7 @@ google-auth = "*"
 python-dotenv = "*"
 gunicorn = "*"
 django-heroku = "*"
+drf-spectacular = {extras = ["sidecar"], version = "*"}
 
 [dev-packages]
 
