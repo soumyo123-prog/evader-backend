@@ -12,7 +12,6 @@ google-auth = "*"
 python-dotenv = "*"
 gunicorn = "*"
 django-heroku = "*"
-drf-yasg = "*"
 
 [dev-packages]
 
